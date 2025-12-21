@@ -2,8 +2,7 @@ from faker import Faker
 import csv
 import json
 import random
-from random import randint
-from datetime import datetime, timedelta
+from datetime import datetime
 
 fake = Faker(['zh_CN'])
 
@@ -60,6 +59,7 @@ RESULTS = ["绝了", "后悔没早知道", "太好用了", "笑死我了", "泪�
 user_pool = []
 video_pool = []
 
+
 def csv_gen(file_name, row_count, row_func, headers):
     """
     file_name: 文件名
@@ -74,6 +74,7 @@ def csv_gen(file_name, row_count, row_func, headers):
         for _ in range(row_count):
             writer.writerow(row_func())
 
+
 def get_random_title():
     template = random.choice(TITLE_TEMPLATES)
     return template.format(
@@ -86,12 +87,13 @@ def get_random_title():
         result=random.choice(RESULTS)
     )
 
+
 def get_user_row():
     phone_type_tuple = ("iPhone 14", "iPhone 13", "HUAWEI Mate 60", "HUAWEI P60", "OPPO Find X", 'VIVO X90', "Xiaomi 13", "Honor 90")
     
     # 更像真实用户的昵称
     if random.random() < 0.4:
-        nickname = fake.name() # 真实姓名风格
+        nickname = fake.name()  # 真实姓名风格
     elif random.random() < 0.7:
         nickname = fake.word() + str(random.randint(100, 9999)) # 词语+数字
     else:
@@ -104,8 +106,8 @@ def get_user_row():
         fans = random.randint(5000, 1000000)
 
     user_dict = {
-        "user_id": fake.random_number(digits=11),
-        "nickname": nickname,
+        "user_id": None if random.random() < 0.02 else fake.random_number(digits=11), # 加入脏数据：None 的USER ID
+        "nickname": None if random.random() < 0.02 else nickname, # 加入脏数据
         "age": fake.random_int(min=12, max=60),
         "city": fake.city_name(),
         "fans_num": fans,
@@ -114,10 +116,16 @@ def get_user_row():
         "register_time": fake.date_between(start_date='-5y', end_date='today').strftime("%Y/%m/%d")
         }
     
+    # 生成脏数据：重复
+    if random.random() < 0.01:
+        user_pool.append(user_dict)
+        user_pool.append(user_dict)
+
     user_pool.append(user_dict) 
 
     values = list(user_dict.values())
     return values
+
 
 def get_video_row():
     # 随机选择1-3个标签
@@ -127,11 +135,11 @@ def get_video_row():
     # 视频时长分布 (短视频为主)
     r = random.random()
     if r < 0.7:
-        duration = random.randint(10, 60) # 10-60秒
+        duration = random.randint(10, 60)  # 10-60秒
     elif r < 0.95:
-        duration = random.randint(60, 300) # 1-5分钟
+        duration = random.randint(60, 300)  # 1-5分钟
     else:
-        duration = random.randint(300, 1800) # 长视频
+        duration = random.randint(300, 1800)  # 长视频
 
     video_dict = {
         "user_id": fake.random_number(digits=11),
@@ -148,49 +156,54 @@ def get_video_row():
     return values
 
 
-def json_gen(file_name, logs_count):
-    data_list = []
-    for _ in range(0, logs_count):
-        if random.random() < 0.4:
-            action_type = "view"
-        elif random.random() >= 0.4 and random.random() < 0.6:
-            action_type = "like"
-        elif random.random() >= 0.6 and random.random() < 0.8:
-            action_type = "comment"
-        elif random.random() >= 0.8 and random.random() < 0.9:
-            action_type = "share"
-        else:
-            action_type = "follow"
-
-        u = random.choice(user_pool)
-        v = random.choice(video_pool)
-
-        if random.random() < 0.6:
-            duration = v["duration"] * 0.3
-        elif random.random() >= 0.6 and random.random() < 0.9:
-            duration = v["duration"] * 0.7
-        else:
-            duration = v["duration"]
-
-        data = {
-            "user_id": u["user_id"],
-            "video_id": v["video_id"],
-            "action_type": action_type,
-            "duration": duration,
-            "time_stamp": fake.date_between(start_date=datetime.strptime(v["update_time"], "%Y/%m/%d"), end_date='today').strftime("%Y/%m/%d"),
-            "ip": fake.city_name()
-        }
-        data_list.append(data)
+def jsonl_gen(file_name, logs_count):
 
     with open(file_name, 'w', encoding="UTF-8") as file:
-        json.dump(data_list, file, indent=4, ensure_ascii=False)
+        for i in range(0, logs_count):
+            if random.random() < 0.4:
+                action_type = "view"
+            elif random.random() >= 0.4 and random.random() < 0.6:
+                action_type = "like"
+            elif random.random() >= 0.6 and random.random() < 0.8:
+                action_type = "comment"
+            elif random.random() >= 0.8 and random.random() < 0.9:
+                action_type = "share"
+            else:
+                action_type = "follow"
+
+            u = random.choice(user_pool)
+            v = random.choice(video_pool)
+
+            if random.random() < 0.02:
+                duration = random.randint(-1000, -1)  # 脏数据：负的观看时长
+            elif random.random() >= 0.02 and random.random() < 0.6:
+                duration = v["duration"] * 0.3
+            elif random.random() >= 0.6 and random.random() < 0.9:
+                duration = v["duration"] * 0.7
+            else:
+                duration = v["duration"]
+
+            data = {
+                "user_id": u["user_id"],
+                "video_id": v["video_id"],
+                "action_type": action_type,
+                "duration": duration,
+                "time_stamp": fake.date_between(start_date=datetime.strptime(v["update_time"], "%Y/%m/%d"), end_date='today').strftime("%Y/%m/%d"),
+                "ip": fake.city_name()
+            }
+    
+            file.write(json.dumps(data, ensure_ascii=False) + '\n')
+
+            if i % 100000 == 0:
+                print(f"已处理 {i} 条数据")
 
 
 if __name__ == "__main__":
-    user_header_list = ['用户ID', '用户昵称', '年龄', 'IP', '粉丝数', '关注数', '设备类型', '注册日期']
-    csv_gen('users.csv', 5000000, get_user_row, user_header_list)
+    user_header_list = ['user_id', 'nickname', 'age', 'ip', 'fans_num', 'likes_num', 'phone_type', 'register_date']
+    csv_gen('users.csv', 3000000, get_user_row, user_header_list)
 
-    video_header_list = ['用户ID', '视频标题', '标签', '视频时长', '上传时间']
-    csv_gen('video.csv', 5000000, get_video_row, video_header_list)
+    video_header_list = ['user_id', 'video_id', 'video_title', 'tags', 'duration', 'upload_time']
+    csv_gen('video.csv', 3000000, get_video_row, video_header_list)
 
-    json_gen('user_behavior_logs.json', 5000000)
+    jsonl_gen('user_behavior_logs.json', 3000000)
+
