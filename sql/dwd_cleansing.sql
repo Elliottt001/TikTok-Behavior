@@ -86,7 +86,7 @@ SELECT DISTINCT
     l.action_type,
     l.duration,
 
-    CAST(l.time_stamp AS TIMESTAMP) AS every_time,
+    CAST(l.time_stamp AS TIMESTAMP) AS event_time,
     EXTRACT(HOUR FROM CAST(l.time_stamp AS TIMESTAMP)) AS event_hour,
     l.ip,
 
