@@ -110,7 +110,7 @@ def get_user_row():
         "user_id": None if random.random() < 0.02 else fake.random_number(digits=11), # 加入脏数据：None 的USER ID
         "nickname": None if random.random() < 0.02 else nickname, # 加入脏数据
         "age": fake.random_int(min=12, max=60),
-        "city": fake.city_name(),
+        "ip": fake.city_name(),
         "fans_num": fans,
         "likes_num": fake.random_int(min=0, max=2000),
         "phone_type": fake.random_element(elements=phone_type_tuple),
@@ -189,7 +189,7 @@ def jsonl_gen(file_name, logs_count):
                 "video_id": v["video_id"],
                 "action_type": action_type,
                 "duration": duration,
-                "time_stamp": fake.date_between(start_date=datetime.strptime(v["update_time"], "%Y/%m/%d"), end_date='today').strftime("%Y/%m/%d"),
+                "time_stamp": fake.date_time_between(start_date=datetime.strptime(v["update_time"], "%Y/%m/%d"), end_date='now').strftime("%Y/%m/%d %H:%M:%S"),
                 "ip": fake.city_name()
             }
     
