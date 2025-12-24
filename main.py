@@ -1,7 +1,6 @@
 from scripts.data_gen import DataGenerator
 from scripts.etl_job import SQLRunner
 from scripts.parquet_torage import ToParquet
-import scripts.db_connector
 import pathlib
 
 
@@ -18,8 +17,8 @@ def run_pipeline():
                                     video_csv_headers=video_header_list)
 
     # ODS and DWD 层
-    db_path = '../data/tiktok_dw.db'
-    sql_dir = '../sql/'
+    db_path = pathlib.Path('../data/tiktok_dw.db')
+    sql_dir = pathlib.Path('../sql/')
 
     runner = SQLRunner(db_path)  # 实例化 Runner
 
@@ -30,8 +29,19 @@ def run_pipeline():
     runner.execute_sql(dwd_sql_path)
 
     # 转存为 parquet 格式
-    ToParquet.store_to_parquet('')
+    ToParquet.store_to_parquet('dwd_users',
+                               './data/dwd_users_parquet.parquet',
+                               './data/tiktok_dw.db')
+    ToParquet.store_to_parquet('dwd_video',
+                               './data/dwd_videos_parquet.parquet',
+                               './data/tiktok_dw.db')
+    ToParquet.store_to_parquet('dwd_behavior_logs',
+                               './data/dwd_behavior_logs_parquet.parquet',
+                               './data/tiktok_dw.db')
 
+    # ADS 层
+    ads_sql_path = sql_dir + 'ads_report.sql'
+    runner.execute_sql(ads_sql_path)
 
 
 if __name__ == "__main__":

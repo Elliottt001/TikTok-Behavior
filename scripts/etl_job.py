@@ -10,17 +10,16 @@ class SQLRunner:
         sql = Path(sql_file).read_text(encoding="UTF-8")
         self.con.execute(sql)
 
+# if __name__ == "__main__":
 
-if __name__ == "__main__":
+#     db_path = '../data/tiktok_dw.db'
+#     sql_dir = '../sql/'
 
-    db_path = '../data/tiktok_dw.db'
-    sql_dir = '../sql/'
+#     # 实例化 Runner
+#     runner = SQLRunner(db_path)
 
-    # 实例化 Runner
-    runner = SQLRunner(db_path)
+#     ods_sql_path = sql_dir + 'ods_load.sql'
+#     runner.execute_sql(ods_sql_path)
 
-    ods_sql_path = sql_dir + 'ods_load.sql'
-    runner.execute_sql(ods_sql_path)
-
-    dwd_sql_path = sql_dir + 'dwd_cleansing.sql'
-    runner.execute_sql(dwd_sql_path)
+#     dwd_sql_path = sql_dir + 'dwd_cleansing.sql'
+#     runner.execute_sql(dwd_sql_path)

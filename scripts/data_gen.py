@@ -15,15 +15,16 @@ class DataGenerator:
                        user_csv_headers,
                        video_csv_headers):
 
-        raw_jsonl_file_path = pathlib.Path(f'../data/raw/user_behavior'
-                                           f'_chunk{chunk_id}.jsonl')
-        raw_csv_file_path = f'../data/raw/user_behavior_chunk{chunk_id}.csv'
+        raw_jsonl_file_path = pathlib.Path(f'../data/raw/user_behavior_logs'
+                                           f'_chunk_{chunk_id}.jsonl')
+        raw_user_csv_file_path = f'../data/raw/user_chunk_{chunk_id}.csv'
+        raw_video_csv_file_path = f'../data/raw/video_chunk_{chunk_id}.csv'
 
-        self.csv_gen(raw_csv_file_path,
+        self.csv_gen(raw_user_csv_file_path,
                      csv_record_count,
                      self.get_user_record,
                      user_csv_headers)
-        self.csv_gen(raw_csv_file_path,
+        self.csv_gen(raw_video_csv_file_path,
                      csv_record_count,
                      self.get_video_record,
                      video_csv_headers)
@@ -272,22 +273,40 @@ class DataGenerator:
         return values
 
     def jsonl_gen(self, file_name, logs_count):
+        
+        # 用户 / 视频分桶：模拟热门视频 / 活跃用户
+        hot_video_rate = 0.1
+        hot_user_rate = 0.05
+
+        hot_video_count = int(len(self.video_pool) * hot_video_rate)
+        hot_user_count = int(len(self.user_pool) * hot_user_rate)
+
+        hot_videos = self.video_pool[:hot_video_count]
+        cold_videos = self.video_pool[hot_video_count:]
+
+        hot_users = self.user_pool[:hot_user_count]
+        cold_users = self.user_pool[hot_user_count:]
 
         with open(file_name, 'w', encoding="UTF-8") as file:
             for i in range(0, logs_count):
-                if random.random() < 0.4:
+                if random.random() < 0.5:
                     action_type = "view"
-                elif random.random() >= 0.4 and random.random() < 0.6:
+                elif random.random() >= 0.5 and random.random() < 0.7:
                     action_type = "like"
-                elif random.random() >= 0.6 and random.random() < 0.8:
+                elif random.random() >= 0.7 and random.random() < 0.9:
                     action_type = "comment"
-                elif random.random() >= 0.8 and random.random() < 0.9:
-                    action_type = "share"
                 else:
                     action_type = "follow"
 
-                u = random.choice(self.user_pool)
-                v = random.choice(self.video_pool)
+                if random.random() < 0.8:
+                    v = random.choice(hot_videos)
+                else:
+                    v = random.choice(cold_videos)
+
+                if random.random() < 0.7:
+                    u = random.choice(hot_users)
+                else:
+                    u = random.choice(cold_users)
 
                 if random.random() < 0.02:
                     duration = random.randint(-1000, -1)  # 脏数据：负的观看时长
