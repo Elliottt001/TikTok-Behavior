@@ -1,4 +1,4 @@
-# TikTok-Behavior Data Pipeline
+# TikTok-Behavior
 
 这是一个模拟 TikTok 用户行为分析的数据仓库项目。该项目包含完整的数据生成、ETL（抽取、转换、加载）处理流程以及报表生成。项目使用 Python 进行流程编排，DuckDB 作为核心计算引擎。
 
@@ -33,10 +33,10 @@ TikTok-Behavior/
 
 ## 环境依赖
 
-*   Python 3.x
+*   Python 3.12
 *   DuckDB
 *   Faker
-*   Pandas (如果项目中用到)
+*   Pandas
 
 ## 快速开始
 
